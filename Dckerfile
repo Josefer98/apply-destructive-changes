@@ -31,3 +31,15 @@ COPY . /var/www/html
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html
 RUN chmod -R 755 /var/www/html/storage /var/www/html/bootstrap/cache
+
+# Enable Apache mod_rewrite
+RUN a2enmod rewrite
+
+# Set ServerName to suppress warning
+RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
+
+# Expose port 80 (you can remove this line if not needed)
+# EXPOSE 80
+
+# Start Apache in the foreground
+CMD ["apache2-foreground"]
