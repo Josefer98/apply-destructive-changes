@@ -2,10 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Temas;
 use Illuminate\Http\Request;
 
 class TemaController extends Controller
 {
+    function __construct()
+    {
+        $this->middleware('permission:ver-temas | crear-temas | editar-temas | borrar-temas', ['only'=>['index']]);
+        $this->middleware('permission:crear-temas', ['only'=>['create','store']]);
+        $this->middleware('permission:editar-temas', ['only'=>['edit','update']]);
+        $this->middleware('permission:borrar-temas', ['only'=>['destroy']]);
+    }
     /**
      * Display a listing of the resource.
      *
@@ -14,6 +22,8 @@ class TemaController extends Controller
     public function index()
     {
         //
+        $temas=Temas::paginate(5);
+        return view('temas.index',compact($temas));
     }
 
     /**
@@ -23,7 +33,7 @@ class TemaController extends Controller
      */
     public function create()
     {
-        //
+        return view('temas.crear');
     }
 
     /**
@@ -34,7 +44,16 @@ class TemaController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        request()->validate([
+            'titulo'=>'required|string',
+            'area'=>'required|string',
+            'palabras_clave'=>'string',
+            'estado'=>'required|in:libre,asignado,terminado',
+            'descripcion'=>'string',
+            'pdfFile' => 'file|mimes:pdf'
+        ]);
+        Temas::create($request->all());
+        return redirect()->route('temas.index');
     }
 
     /**
@@ -54,9 +73,9 @@ class TemaController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(Temas $temas)
     {
-        //
+        return view('temas.editar',compact('temas'));
     }
 
     /**
@@ -66,9 +85,18 @@ class TemaController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Temas $temas)
     {
-        //
+        request()->validate([
+            'titulo'=>'required|string',
+            'area'=>'required|string',
+            'palabras_clave'=>'string',
+            'estado'=>'required|in:libre,asignado,terminado',
+            'descripcion'=>'string',
+            'pdfFile' => 'file|mimes:pdf'
+        ]); 
+        $temas->update($request->all());
+        return redirect()->route('temas.index');
     }
 
     /**
@@ -77,8 +105,9 @@ class TemaController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Temas $temas)
     {
-        //
+        $temas->delete();
+        return redirect()->route('temas.index');
     }
 }
